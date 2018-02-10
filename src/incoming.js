@@ -58,11 +58,15 @@ module.exports = (bp, telegram) => {
     };
   };
 
-  const _handleEvent = (event, eventType) => {
-    event = {
+  const _handleEvent = (ev, eventType) => {
+    var event = {
       type: eventType,
-      ...extractBasics(preprocessEvent(event))
+      text:'event',
+      chat: ev.chat,
+      user: ev.from,
+      ...extractBasics(preprocessEvent(ev))
     };
+    console.log(event);
     bp.middlewares.sendIncoming(event);
   };
 
@@ -72,19 +76,19 @@ module.exports = (bp, telegram) => {
       chat: event.chat,
       user: event.from,
       text: event.text,
+      message_id: event.message_id,
       ...extractBasics(event)
     });
   })
 
   telegram.bot.on('callback_query', event => {
+    console.log(event);
     bp.middlewares.sendIncoming({
       type: 'callback_query',
-      data: event.data,
-      query_id: event.id,
-      chat_id: event.message.chat.id,
-      user_id: event.message.from.id,
+      chat: event.message.chat,
+      user: event.from,
+      text: event.data,
       message_id: event.message.message_id,
-      text: 'null',
       ...extractBasics(event)
     });
   });

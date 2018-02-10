@@ -1,3 +1,5 @@
+
+
 const validateChatId = (chatId) => {
   if (typeof (chatId) !== 'number') {
     throw new Error('Invalid chat id: ' + chatId);
@@ -10,11 +12,18 @@ const validateText = (text) => {
   }
 };
 
+const validateUrl = (url) => {
+  if (typeof(url) !== 'string') {
+    throw new Error('Expected URL to be a string')
+  }
+}
+
+
 const createText = (chatId, text, options = {}) => {
   validateChatId(chatId);
   validateText(text);
 
-  return {
+  return  {
     platform: 'telegram',
     type: 'text',
     text: text,
@@ -24,6 +33,22 @@ const createText = (chatId, text, options = {}) => {
     },
   };
 };
+
+const createAttachment = (chatId, url,options = {}) => {
+  validateChatId(chatId);
+  validateUrl(url);
+
+  return {
+    platform: 'telegram',
+    type: 'photo',
+    text: 'Attachment () : ' + url,
+    raw: {
+      chatId: chatId,
+      url: url,
+      options: options
+    }
+  };
+}
 
 const createEditMessage = (text, options = {}) => {
   return {
@@ -40,4 +65,5 @@ const createEditMessage = (text, options = {}) => {
 module.exports = {
   createText,
   createEditMessage,
+  createAttachment
 };

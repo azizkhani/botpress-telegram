@@ -3,6 +3,39 @@ import _ from 'lodash';
 import Promise from 'bluebird';
 import actions from './actions';
 
+
+const QUICK_REPLY_PAYLOAD = /\<(.+)\>\s(.+)/i;
+
+
+function processKeyboards(qrs, blocName) {
+  if (!_.isArray(qrs)) {
+    throw new Error('Expected quick_replies to be an array');
+  }
+
+  return qrs.map(qr => {
+    if (_.isString(qr) && QUICK_REPLY_PAYLOAD.test(qr)) {
+      let [, payload, text] = QUICK_REPLY_PAYLOAD.exec(qr);
+      
+      // <.HELLO> becomes <BLOCNAME.HELLO>
+      if (payload.startsWith('.')) {
+        payload = blocName + payload;
+      }
+
+      return [{
+        text: text,
+        request_contact: payload.toUpperCase(),
+        request_location: payload.toUpperCase(),
+      }];
+    };
+
+    return qr;
+  });
+}
+
+
+
+
+
 // TODO Extract this logic directly to botpress's UMM
 function getUserId(event) {
   const userId = _.get(event, 'user.id')
@@ -37,13 +70,20 @@ function processOutgoing({ event, blocName, instruction }) {
   // PRE-PROCESSING
   ////////
   
-  const optionsList = ['typing'];
+  const optionsList = ['typing', 'keyboards'];
 
   const options = _.pick(instruction, optionsList);
   
   for (let prop of optionsList) {
     delete ins[prop];
   }
+
+
+  // if (options.keyboards) {
+  //   options.reply_markup ={
+  //     keyboard: [...processKeyboards(options.keyboards, blocName)]
+  //   };
+  // }
 
   /////////
   /// Processing
